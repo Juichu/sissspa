@@ -67,6 +67,7 @@
             max-width: 100%;
             max-height: 100%;
             transition: transform 0.3s ease;
+            cursor: zoom-in;
         }
 
         .photo-card img {
@@ -108,6 +109,45 @@
             font-weight: 300;
         }
 
+        /* 放大模態視窗樣式 */
+        #zoom-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.98);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #zoom-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        #zoom-img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 30px;
+            color: #8b8682;
+            cursor: pointer;
+            z-index: 110;
+        }
+
         /* 載入動畫 */
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -130,19 +170,19 @@
             <div class="slider-track" id="track">
                 <!-- 第一張 -->
                 <div class="slide-item">
-                    <div class="photo-card">
+                    <div class="photo-card" onclick="openZoom(0)">
                         <img src="https://lh3.googleusercontent.com/d/1qSujs6QdqEyXWcOZT9rKWC72KoP331UA" alt="療癒選單 1" loading="lazy">
                     </div>
                 </div>
                 <!-- 第二張 -->
                 <div class="slide-item">
-                    <div class="photo-card">
+                    <div class="photo-card" onclick="openZoom(1)">
                         <img src="https://lh3.googleusercontent.com/d/1k7qEffeh7fpGiN2ywtaUEoiZJPZ_MnMw" alt="療癒選單 2" loading="lazy">
                     </div>
                 </div>
                 <!-- 第三張 -->
                 <div class="slide-item">
-                    <div class="photo-card">
+                    <div class="photo-card" onclick="openZoom(2)">
                         <img src="https://lh3.googleusercontent.com/d/1KYmIs4FeK4Ks-l21IWySck3ncyvjYHoG" alt="療癒選單 3" loading="lazy">
                     </div>
                 </div>
@@ -161,14 +201,42 @@
         </div>
     </div>
 
+    <!-- 放大視窗 -->
+    <div id="zoom-modal" onclick="closeZoom()">
+        <span class="close-btn">&times;</span>
+        <img id="zoom-img" src="" alt="放大圖示">
+    </div>
+
     <script>
         const track = document.getElementById('track');
         const dots = document.querySelectorAll('.dot');
+        const zoomModal = document.getElementById('zoom-modal');
+        const zoomImg = document.getElementById('zoom-img');
+        
+        const imageUrls = [
+            "https://lh3.googleusercontent.com/d/1qSujs6QdqEyXWcOZT9rKWC72KoP331UA",
+            "https://lh3.googleusercontent.com/d/1k7qEffeh7fpGiN2ywtaUEoiZJPZ_MnMw",
+            "https://lh3.googleusercontent.com/d/1KYmIs4FeK4Ks-l21IWySck3ncyvjYHoG"
+        ];
+
         let startX = 0;
         let currentTranslate = 0;
         let prevTranslate = 0;
         let animationID = 0;
         let currentIndex = 0;
+        let isDragging = false;
+
+        // 放大功能
+        function openZoom(index) {
+            zoomImg.src = imageUrls[index];
+            zoomModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeZoom() {
+            zoomModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
 
         // 禁止圖片預設右鍵與拖拽
         document.querySelectorAll('img').forEach(img => {
@@ -190,21 +258,27 @@
         track.addEventListener('mouseleave', touchEnd);
 
         function touchStart(event) {
+            if (zoomModal.classList.contains('active')) return;
             startX = getPositionX(event);
+            isDragging = true;
             track.style.transition = 'none';
             animationID = requestAnimationFrame(animation);
         }
 
         function touchMove(event) {
+            if (!isDragging) return;
             const currentX = getPositionX(event);
             const diff = currentX - startX;
             currentTranslate = prevTranslate + diff;
         }
 
         function touchEnd() {
+            if (!isDragging) return;
+            isDragging = false;
             cancelAnimationFrame(animationID);
             const movedBy = currentTranslate - prevTranslate;
 
+            // 滑動靈敏度
             if (movedBy < -100 && currentIndex < 2) currentIndex += 1;
             if (movedBy > 100 && currentIndex > 0) currentIndex -= 1;
 
@@ -217,7 +291,7 @@
 
         function animation() {
             setSliderPosition();
-            if (animationID) requestAnimationFrame(animation);
+            if (isDragging) requestAnimationFrame(animation);
         }
 
         function setSliderPosition() {
