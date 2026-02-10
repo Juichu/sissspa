@@ -121,29 +121,29 @@
 <body>
 
     <div class="slider-wrapper fade-in">
-        <!-- 頂部 LOGO 或標題 (可選) -->
+        <!-- 頂部標題 -->
         <div class="mb-4 text-center">
             <h1 class="text-sm tracking-[0.4em] text-stone-400 uppercase">Healing Journey</h1>
         </div>
 
         <div class="slider-viewport" id="viewport">
             <div class="slider-track" id="track">
-                <!-- 第一張：靈氣與頌缽 -->
+                <!-- 第一張 -->
                 <div class="slide-item">
                     <div class="photo-card">
-                        <img src="https://lh3.googleusercontent.com/d/1qSujs6QdqEyXWcOZT9rKWC72KoP331UA" alt="療癒選單 1">
+                        <img src="https://lh3.googleusercontent.com/d/1qSujs6QdqEyXWcOZT9rKWC72KoP331UA" alt="療癒選單 1" loading="lazy">
                     </div>
                 </div>
-                <!-- 第二張：詳細項目 -->
+                <!-- 第二張 -->
                 <div class="slide-item">
                     <div class="photo-card">
-                        <img src="https://lh3.googleusercontent.com/d/1k7qEffeh7fpGiN2ywtaUEoiZJPZ_MnMw" alt="療癒選單 2">
+                        <img src="https://lh3.googleusercontent.com/d/1k7qEffeh7fpGiN2ywtaUEoiZJPZ_MnMw" alt="療癒選單 2" loading="lazy">
                     </div>
                 </div>
-                <!-- 第三張：預約說明 -->
+                <!-- 第三張 -->
                 <div class="slide-item">
                     <div class="photo-card">
-                        <img src="https://lh3.googleusercontent.com/d/1KYmIs4FeK4Ks-l21IWySck3ncyvjYHoG" alt="療癒選單 3">
+                        <img src="https://lh3.googleusercontent.com/d/1KYmIs4FeK4Ks-l21IWySck3ncyvjYHoG" alt="療癒選單 3" loading="lazy">
                     </div>
                 </div>
             </div>
@@ -170,9 +170,12 @@
         let animationID = 0;
         let currentIndex = 0;
 
-        // 禁止圖片預設拖拽
+        // 禁止圖片預設右鍵與拖拽
         document.querySelectorAll('img').forEach(img => {
             img.oncontextmenu = (e) => e.preventDefault();
+            img.onerror = function() {
+                this.src = 'https://via.placeholder.com/400x600?text=圖片載入中...請確認權限';
+            };
         });
 
         // 觸控事件
@@ -180,7 +183,7 @@
         track.addEventListener('touchend', touchEnd);
         track.addEventListener('touchmove', touchMove);
 
-        // 滑鼠事件 (用於開發測試)
+        // 滑鼠事件
         track.addEventListener('mousedown', touchStart);
         track.addEventListener('mouseup', touchEnd);
         track.addEventListener('mousemove', touchMove);
@@ -202,7 +205,6 @@
             cancelAnimationFrame(animationID);
             const movedBy = currentTranslate - prevTranslate;
 
-            // 滑動靈敏度設定
             if (movedBy < -100 && currentIndex < 2) currentIndex += 1;
             if (movedBy > 100 && currentIndex > 0) currentIndex -= 1;
 
@@ -236,7 +238,6 @@
             });
         }
 
-        // 處理視窗大小改變
         window.addEventListener('resize', setPositionByIndex);
     </script>
 </body>
