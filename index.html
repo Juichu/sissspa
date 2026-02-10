@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>聆聽內在的回響 | 療癒服務選單</title>
-    <!-- 引入 Tailwind CSS 用於快速佈局 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -17,12 +16,11 @@
             background-color: var(--bg-color);
             margin: 0;
             padding: 0;
-            overflow: hidden; /* 防止手機瀏覽器彈跳影響滑動 */
+            overflow: hidden;
             font-family: "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif;
-            touch-action: pan-y;
+            touch-action: none; /* 完全接管手勢 */
         }
 
-        /* 輪播主容器 */
         .slider-wrapper {
             position: relative;
             width: 100vw;
@@ -58,7 +56,6 @@
             box-sizing: border-box;
         }
 
-        /* 圖片卡片樣式 */
         .photo-card {
             background: white;
             padding: 10px;
@@ -66,7 +63,6 @@
             border-radius: 4px;
             max-width: 100%;
             max-height: 100%;
-            transition: transform 0.3s ease;
             cursor: zoom-in;
         }
 
@@ -75,16 +71,13 @@
             max-height: 70vh;
             display: block;
             object-fit: contain;
-            user-select: none;
-            -webkit-user-drag: none;
+            pointer-events: none;
         }
 
-        /* 分頁指示器 */
         .pagination {
             display: flex;
             gap: 15px;
             margin-top: 20px;
-            z-index: 10;
         }
 
         .dot {
@@ -100,7 +93,6 @@
             transform: scale(1.4);
         }
 
-        /* 滑動提示 */
         .swipe-hint {
             margin-top: 15px;
             font-size: 13px;
@@ -109,7 +101,7 @@
             font-weight: 300;
         }
 
-        /* 放大模態視窗樣式 */
+        /* 放大模態視窗：修正縮放邏輯 */
         #zoom-modal {
             display: none;
             position: fixed;
@@ -119,200 +111,229 @@
             height: 100%;
             background-color: rgba(255, 255, 255, 0.98);
             z-index: 100;
-            justify-content: center;
-            align-items: center;
-            cursor: zoom-out;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            overflow: hidden;
+            touch-action: none;
         }
 
         #zoom-modal.active {
             display: flex;
-            opacity: 1;
+        }
+
+        #zoom-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            will-change: transform;
         }
 
         #zoom-img {
-            max-width: 95%;
-            max-height: 95%;
+            max-width: 100%;
+            max-height: 100%;
             object-fit: contain;
-            box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+            transition: transform 0.1s ease-out;
+            will-change: transform;
         }
 
         .close-btn {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 30px;
+            top: 25px;
+            right: 25px;
+            width: 40px;
+            height: 40px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
             color: #8b8682;
             cursor: pointer;
             z-index: 110;
-        }
-
-        /* 載入動畫 */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .fade-in {
-            animation: fadeIn 1s ease-in;
         }
     </style>
 </head>
 <body>
 
-    <div class="slider-wrapper fade-in">
-        <!-- 頂部標題 -->
+    <div class="slider-wrapper">
         <div class="mb-4 text-center">
             <h1 class="text-sm tracking-[0.4em] text-stone-400 uppercase">Healing Journey</h1>
         </div>
 
         <div class="slider-viewport" id="viewport">
             <div class="slider-track" id="track">
-                <!-- 第一張 -->
                 <div class="slide-item">
                     <div class="photo-card" onclick="openZoom(0)">
-                        <img src="https://lh3.googleusercontent.com/d/1qSujs6QdqEyXWcOZT9rKWC72KoP331UA" alt="療癒選單 1" loading="lazy">
+                        <img src="https://lh3.googleusercontent.com/d/1qSujs6QdqEyXWcOZT9rKWC72KoP331UA" alt="選單 1">
                     </div>
                 </div>
-                <!-- 第二張 -->
                 <div class="slide-item">
                     <div class="photo-card" onclick="openZoom(1)">
-                        <img src="https://lh3.googleusercontent.com/d/1k7qEffeh7fpGiN2ywtaUEoiZJPZ_MnMw" alt="療癒選單 2" loading="lazy">
+                        <img src="https://lh3.googleusercontent.com/d/1k7qEffeh7fpGiN2ywtaUEoiZJPZ_MnMw" alt="選單 2">
                     </div>
                 </div>
-                <!-- 第三張 -->
                 <div class="slide-item">
                     <div class="photo-card" onclick="openZoom(2)">
-                        <img src="https://lh3.googleusercontent.com/d/1KYmIs4FeK4Ks-l21IWySck3ncyvjYHoG" alt="療癒選單 3" loading="lazy">
+                        <img src="https://lh3.googleusercontent.com/d/1KYmIs4FeK4Ks-l21IWySck3ncyvjYHoG" alt="選單 3">
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 底部引導 -->
         <div class="pagination" id="pagination">
             <div class="dot active"></div>
             <div class="dot"></div>
             <div class="dot"></div>
         </div>
 
-        <div class="swipe-hint">
-            〈 SWIPE TO BROWSE 〉
-        </div>
+        <div class="swipe-hint">〈 SWIPE TO BROWSE 〉</div>
     </div>
 
     <!-- 放大視窗 -->
-    <div id="zoom-modal" onclick="closeZoom()">
-        <span class="close-btn">&times;</span>
-        <img id="zoom-img" src="" alt="放大圖示">
+    <div id="zoom-modal">
+        <div class="close-btn" onclick="closeZoom()">&times;</div>
+        <div id="zoom-container">
+            <img id="zoom-img" src="" alt="放大圖片">
+        </div>
     </div>
 
     <script>
+        // --- 基礎變數 ---
         const track = document.getElementById('track');
         const dots = document.querySelectorAll('.dot');
         const zoomModal = document.getElementById('zoom-modal');
         const zoomImg = document.getElementById('zoom-img');
-        
+        const zoomContainer = document.getElementById('zoom-container');
+
         const imageUrls = [
             "https://lh3.googleusercontent.com/d/1qSujs6QdqEyXWcOZT9rKWC72KoP331UA",
             "https://lh3.googleusercontent.com/d/1k7qEffeh7fpGiN2ywtaUEoiZJPZ_MnMw",
             "https://lh3.googleusercontent.com/d/1KYmIs4FeK4Ks-l21IWySck3ncyvjYHoG"
         ];
 
+        let currentIndex = 0;
         let startX = 0;
         let currentTranslate = 0;
         let prevTranslate = 0;
-        let animationID = 0;
-        let currentIndex = 0;
-        let isDragging = false;
 
-        // 放大功能
+        // --- 輪播邏輯 ---
+        track.addEventListener('touchstart', e => {
+            if(zoomModal.classList.contains('active')) return;
+            startX = e.touches[0].clientX;
+            track.style.transition = 'none';
+        });
+
+        track.addEventListener('touchmove', e => {
+            if(zoomModal.classList.contains('active')) return;
+            const currentX = e.touches[0].clientX;
+            currentTranslate = prevTranslate + (currentX - startX);
+            track.style.transform = `translateX(${currentTranslate}px)`;
+        });
+
+        track.addEventListener('touchend', e => {
+            if(zoomModal.classList.contains('active')) return;
+            const movedBy = currentTranslate - prevTranslate;
+            if (movedBy < -100 && currentIndex < 2) currentIndex++;
+            else if (movedBy > 100 && currentIndex > 0) currentIndex--;
+            updateSlider();
+        });
+
+        function updateSlider() {
+            currentTranslate = currentIndex * -window.innerWidth;
+            prevTranslate = currentTranslate;
+            track.style.transition = 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)';
+            track.style.transform = `translateX(${currentTranslate}px)`;
+            dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIndex));
+        }
+
+        // --- 雙指縮放與拖動邏輯 ---
+        let scale = 1;
+        let lastScale = 1;
+        let pointX = 0;
+        let pointY = 0;
+        let startPointX = 0;
+        let startPointY = 0;
+        let initialDistance = 0;
+
         function openZoom(index) {
             zoomImg.src = imageUrls[index];
             zoomModal.classList.add('active');
-            document.body.style.overflow = 'hidden';
+            resetZoom();
         }
 
         function closeZoom() {
             zoomModal.classList.remove('active');
-            document.body.style.overflow = 'auto';
         }
 
-        // 禁止圖片預設右鍵與拖拽
-        document.querySelectorAll('img').forEach(img => {
-            img.oncontextmenu = (e) => e.preventDefault();
-            img.onerror = function() {
-                this.src = 'https://via.placeholder.com/400x600?text=圖片載入中...請確認權限';
-            };
+        function resetZoom() {
+            scale = 1;
+            lastScale = 1;
+            pointX = 0;
+            pointY = 0;
+            updateZoomTransform();
+        }
+
+        function updateZoomTransform() {
+            zoomImg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+        }
+
+        // 縮放與移動事件監聽
+        zoomModal.addEventListener('touchstart', e => {
+            if (e.touches.length === 2) {
+                // 雙指起始距離
+                initialDistance = Math.hypot(
+                    e.touches[0].pageX - e.touches[1].pageX,
+                    e.touches[0].pageY - e.touches[1].pageY
+                );
+            } else if (e.touches.length === 1) {
+                // 單指移動記錄
+                startPointX = e.touches[0].pageX - pointX;
+                startPointY = e.touches[0].pageY - pointY;
+            }
         });
 
-        // 觸控事件
-        track.addEventListener('touchstart', touchStart);
-        track.addEventListener('touchend', touchEnd);
-        track.addEventListener('touchmove', touchMove);
+        zoomModal.addEventListener('touchmove', e => {
+            e.preventDefault();
+            if (e.touches.length === 2) {
+                // 處理雙指縮放
+                const currentDistance = Math.hypot(
+                    e.touches[0].pageX - e.touches[1].pageX,
+                    e.touches[0].pageY - e.touches[1].pageY
+                );
+                const zoomFactor = currentDistance / initialDistance;
+                scale = Math.min(Math.max(lastScale * zoomFactor, 1), 5); // 限制 1~5 倍
+            } else if (e.touches.length === 1 && scale > 1) {
+                // 處理單指拖動（僅在放大時）
+                pointX = e.touches[0].pageX - startPointX;
+                pointY = e.touches[0].pageY - startPointY;
+            }
+            updateZoomTransform();
+        }, { passive: false });
 
-        // 滑鼠事件
-        track.addEventListener('mousedown', touchStart);
-        track.addEventListener('mouseup', touchEnd);
-        track.addEventListener('mousemove', touchMove);
-        track.addEventListener('mouseleave', touchEnd);
+        zoomModal.addEventListener('touchend', e => {
+            lastScale = scale;
+            if (scale <= 1) resetZoom();
+        });
 
-        function touchStart(event) {
-            if (zoomModal.classList.contains('active')) return;
-            startX = getPositionX(event);
-            isDragging = true;
-            track.style.transition = 'none';
-            animationID = requestAnimationFrame(animation);
-        }
+        // 支援雙擊放大/縮小
+        let lastTap = 0;
+        zoomModal.addEventListener('touchend', e => {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 300 && tapLength > 0) {
+                if (scale > 1) resetZoom();
+                else {
+                    scale = 2.5;
+                    lastScale = 2.5;
+                    updateZoomTransform();
+                }
+                e.preventDefault();
+            }
+            lastTap = currentTime;
+        });
 
-        function touchMove(event) {
-            if (!isDragging) return;
-            const currentX = getPositionX(event);
-            const diff = currentX - startX;
-            currentTranslate = prevTranslate + diff;
-        }
-
-        function touchEnd() {
-            if (!isDragging) return;
-            isDragging = false;
-            cancelAnimationFrame(animationID);
-            const movedBy = currentTranslate - prevTranslate;
-
-            // 滑動靈敏度
-            if (movedBy < -100 && currentIndex < 2) currentIndex += 1;
-            if (movedBy > 100 && currentIndex > 0) currentIndex -= 1;
-
-            setPositionByIndex();
-        }
-
-        function getPositionX(event) {
-            return event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
-        }
-
-        function animation() {
-            setSliderPosition();
-            if (isDragging) requestAnimationFrame(animation);
-        }
-
-        function setSliderPosition() {
-            track.style.transform = `translateX(${currentTranslate}px)`;
-        }
-
-        function setPositionByIndex() {
-            currentTranslate = currentIndex * -window.innerWidth;
-            prevTranslate = currentTranslate;
-            track.style.transition = 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)';
-            setSliderPosition();
-            updatePagination();
-        }
-
-        function updatePagination() {
-            dots.forEach((dot, index) => {
-                dot.classList.toggle('active', index === currentIndex);
-            });
-        }
-
-        window.addEventListener('resize', setPositionByIndex);
+        window.addEventListener('resize', updateSlider);
     </script>
 </body>
 </html>
